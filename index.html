@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://img0.baidu.com/it/u=3286628255,2418701047&amp;fm=253&amp;fmt=auto&amp;app=138&amp;f=JPG?w=500&amp;h=500" type="image/x-icon">
+  <title>测速小工具</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input {
+      width: 300px;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      border-color: #409eff;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #409eff;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #66b1ff;
+    }
+
+    #appendPathBtn {
+      border: 1px solid #dcdfe6;
+      background-color: transparent;
+      color: #606266;
+      transition: all 0.3s;
+    }
+
+    #appendPathBtn:hover {
+      background-color: #ecf5ff;
+      color: #66b1ff;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    .result.good {
+      color: #67c23a; /* 绿色 */
+    }
+
+    .result.average {
+      color: #e6a23c; /* 黄色 */
+    }
+
+    .result.poor {
+      color: #f56c6c; /* 红色 */
+    }
+
+    .result.error {
+      color: red;
+    }
+
+    .button-message {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #67c23a; /* 改为绿色 */
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>测速小工具</h1>
+    <div class="input-group">
+      <input type="text" id="urlInput" placeholder="请输入网址（例如：https://example.com）">
+      <button id="testSpeedBtn">测速</button>
+      <button id="appendPathBtn">拼接路径
+        <span class="button-message" id="appendMessage">路径已拼接成功！</span>
+      </button>
+    </div>
+    <div id="result" class="result">请输入网址后点击测速按钮</div>
+  </div>
+  <script>
+    document.getElementById("testSpeedBtn").addEventListener("click", async () => {
+      const urlInput = document.getElementById("urlInput").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!urlInput) {
+        resultDiv.textContent = "请输入一个有效的网址！";
+        resultDiv.className = "result error";
+        return;
+      }
+
+      // 确保用户输入的 URL 格式正确
+      const url = urlInput.startsWith("http://") || urlInput.startsWith("https://") 
+        ? urlInput 
+        : `https://${urlInput}`;
+
+      resultDiv.textContent = "测速中，请稍候...";
+      resultDiv.className = "result";
+
+      try {
+        const startTime = performance.now(); // 开始时间
+        await fetch(url, { method: "HEAD", mode: "no-cors" }); // 发送请求
+        const endTime = performance.now(); // 结束时间
+
+        const responseTime = (endTime - startTime).toFixed(2); // 响应时间
+        let resultClass = "";
+
+        if (responseTime < 500) {
+          resultClass = "good";
+        } else {
+          resultClass = "average";
+        }
+
+        resultDiv.textContent = `网址：${url} 的响应时间为 ${responseTime} 毫秒`;
+        resultDiv.className = `result ${resultClass}`;
+      } catch (error) {
+        console.log(`测速失败：${error.message}`);
+        
+        resultDiv.textContent = `测速失败：无法连接到 ${url}`;
+        resultDiv.className = "result error";
+      }
+    });
+
+    document.getElementById("appendPathBtn").addEventListener("click", () => {
+      const urlInput = document.getElementById("urlInput");
+      let url = urlInput.value.trim();
+      const appendMessage = document.getElementById("appendMessage");
+
+      if (!url) {
+        alert("请输入一个有效的网址！");
+        return;
+      }
+
+      // 确保用户输入的 URL 格式正确
+      url = url.startsWith("http://") || url.startsWith("https://") 
+        ? url 
+        : `https://${url}`;
+
+      // 去除末尾的斜杠
+      url = url.endsWith("/") ? url.slice(0, -1) : url;
+
+      // 拼接路径
+      if (!url.endsWith("/translate_a/element.js")) {
+        url += "/translate_a/element.js";
+      }
+
+      urlInput.value = url;
+
+      // 显示消息提示
+      appendMessage.style.display = "block";
+      setTimeout(() => {
+        appendMessage.style.display = "none";
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
